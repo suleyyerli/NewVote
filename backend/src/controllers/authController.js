@@ -9,9 +9,9 @@ exports.register = async (req, res) => {
 
     // Vérifier si l'utilisateur existe déjà
     const [existingUser] = await sequelize.query(
-      "SELECT * FROM Users WHERE email = ? OR username = ?",
+      "SELECT * FROM Users WHERE email = :email OR username = :username",
       {
-        replacements: [email, username],
+        replacements: { email, username },
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -30,18 +30,23 @@ exports.register = async (req, res) => {
 
     // Créer l'utilisateur
     const [result] = await sequelize.query(
-      'INSERT INTO Users (username, email, password, role, createdAt, updatedAt) VALUES (?, ?, ?, "user", NOW(), NOW())',
+      "INSERT INTO Users (username, email, password, role, createdAt, updatedAt) VALUES (:username, :email, :password, :role, NOW(), NOW())",
       {
-        replacements: [username, email, hashedPassword],
+        replacements: {
+          username,
+          email,
+          password: hashedPassword,
+          role: "user",
+        },
         type: sequelize.QueryTypes.INSERT,
       }
     );
 
     // Récupérer l'utilisateur créé
     const [user] = await sequelize.query(
-      "SELECT id, username, email, role FROM Users WHERE id = ?",
+      "SELECT id, username, email, role FROM Users WHERE id = :id",
       {
-        replacements: [result[0]],
+        replacements: { id: result },
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -76,9 +81,9 @@ exports.login = async (req, res) => {
 
     // Récupérer l'utilisateur
     const [user] = await sequelize.query(
-      "SELECT * FROM Users WHERE email = ?",
+      "SELECT * FROM Users WHERE email = :email",
       {
-        replacements: [email],
+        replacements: { email },
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -120,6 +125,38 @@ exports.login = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Erreur lors de la connexion",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
+    });
+  }
+};
+
+// Récupérer les informations de l'utilisateur connecté
+exports.getMe = async (req, res) => {
+  try {
+    const [user] = await sequelize.query(
+      "SELECT id, username, email, role FROM Users WHERE id = :id",
+      {
+        replacements: { id: req.user.id },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Utilisateur non trouvé",
+      });
+    }
+
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération du profil:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la récupération du profil",
       error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
