@@ -9,7 +9,7 @@ exports.createComment = async (req, res) => {
 
     // Vérifier si le post existe
     const [post] = await sequelize.query(
-      "SELECT id FROM Posts WHERE id = :postId",
+      "SELECT id FROM posts WHERE id = :postId",
       {
         replacements: { postId },
         type: sequelize.QueryTypes.SELECT,
@@ -25,7 +25,7 @@ exports.createComment = async (req, res) => {
 
     // Créer le commentaire
     const [result] = await sequelize.query(
-      "INSERT INTO Comments (content, userId, postId, likesCount, createdAt, updatedAt) VALUES (:content, :userId, :postId, 0, NOW(), NOW())",
+      "INSERT INTO comments (content, userId, postId, likesCount, createdAt, updatedAt) VALUES (:content, :userId, :postId, 0, NOW(), NOW())",
       {
         replacements: { content, userId, postId },
         type: sequelize.QueryTypes.INSERT,
@@ -35,9 +35,9 @@ exports.createComment = async (req, res) => {
     // Récupérer le commentaire créé avec les infos de l'utilisateur
     const [commentWithUser] = await sequelize.query(
       `SELECT c.*, u.username 
-             FROM Comments c 
-             JOIN Users u ON c.userId = u.id 
-             WHERE c.id = :commentId`,
+       FROM comments c 
+       JOIN users u ON c.userId = u.id 
+       WHERE c.id = :commentId`,
       {
         replacements: { commentId: result },
         type: sequelize.QueryTypes.SELECT,
@@ -66,11 +66,11 @@ exports.getPostComments = async (req, res) => {
 
     const comments = await sequelize.query(
       `SELECT c.*, u.username, 
-             (SELECT COUNT(*) FROM CommentLikes cl WHERE cl.commentId = c.id) as likesCount
-             FROM Comments c 
-             JOIN Users u ON c.userId = u.id 
-             WHERE c.postId = :postId
-             ORDER BY c.likesCount DESC, c.createdAt DESC`,
+       (SELECT COUNT(*) FROM CommentLikes cl WHERE cl.commentId = c.id) as likesCount
+       FROM comments c 
+       JOIN users u ON c.userId = u.id 
+       WHERE c.postId = :postId
+       ORDER BY c.likesCount DESC, c.createdAt DESC`,
       {
         replacements: { postId },
         type: sequelize.QueryTypes.SELECT,
@@ -100,7 +100,7 @@ exports.updateComment = async (req, res) => {
 
     // Vérifier si le commentaire existe et appartient à l'utilisateur
     const [comment] = await sequelize.query(
-      "SELECT * FROM Comments WHERE id = :id",
+      "SELECT * FROM comments WHERE id = :id",
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -122,7 +122,7 @@ exports.updateComment = async (req, res) => {
     }
 
     await sequelize.query(
-      "UPDATE Comments SET content = :content, updatedAt = NOW() WHERE id = :id",
+      "UPDATE comments SET content = :content, updatedAt = NOW() WHERE id = :id",
       {
         replacements: { content, id },
         type: sequelize.QueryTypes.UPDATE,
@@ -130,7 +130,7 @@ exports.updateComment = async (req, res) => {
     );
 
     const [updatedComment] = await sequelize.query(
-      "SELECT * FROM Comments WHERE id = :id",
+      "SELECT * FROM comments WHERE id = :id",
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -160,7 +160,7 @@ exports.deleteComment = async (req, res) => {
 
     // Vérifier si le commentaire existe
     const [comment] = await sequelize.query(
-      "SELECT * FROM Comments WHERE id = :id",
+      "SELECT * FROM comments WHERE id = :id",
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -181,7 +181,7 @@ exports.deleteComment = async (req, res) => {
       });
     }
 
-    await sequelize.query("DELETE FROM Comments WHERE id = :id", {
+    await sequelize.query("DELETE FROM comments WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.DELETE,
     });
@@ -208,7 +208,7 @@ exports.toggleLike = async (req, res) => {
 
     // Vérifier si le commentaire existe
     const [comment] = await sequelize.query(
-      "SELECT * FROM Comments WHERE id = :id",
+      "SELECT * FROM comments WHERE id = :id",
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -242,7 +242,7 @@ exports.toggleLike = async (req, res) => {
       );
 
       await sequelize.query(
-        "UPDATE Comments SET likesCount = likesCount - 1 WHERE id = :id",
+        "UPDATE comments SET likesCount = likesCount - 1 WHERE id = :id",
         {
           replacements: { id },
           type: sequelize.QueryTypes.UPDATE,
@@ -250,7 +250,7 @@ exports.toggleLike = async (req, res) => {
       );
 
       const [updatedComment] = await sequelize.query(
-        "SELECT * FROM Comments WHERE id = :id",
+        "SELECT * FROM comments WHERE id = :id",
         {
           replacements: { id },
           type: sequelize.QueryTypes.SELECT,
@@ -273,7 +273,7 @@ exports.toggleLike = async (req, res) => {
       );
 
       await sequelize.query(
-        "UPDATE Comments SET likesCount = likesCount + 1 WHERE id = :id",
+        "UPDATE comments SET likesCount = likesCount + 1 WHERE id = :id",
         {
           replacements: { id },
           type: sequelize.QueryTypes.UPDATE,
@@ -281,7 +281,7 @@ exports.toggleLike = async (req, res) => {
       );
 
       const [updatedComment] = await sequelize.query(
-        "SELECT * FROM Comments WHERE id = :id",
+        "SELECT * FROM comments WHERE id = :id",
         {
           replacements: { id },
           type: sequelize.QueryTypes.SELECT,

@@ -5,9 +5,9 @@ exports.getAllUsers = async (req, res) => {
   try {
     const users = await sequelize.query(
       `SELECT id, username, email, role, createdAt, updatedAt,
-       (SELECT COUNT(*) FROM Posts WHERE userId = Users.id) as postsCount,
-       (SELECT COUNT(*) FROM Comments WHERE userId = Users.id) as commentsCount
-       FROM Users 
+       (SELECT COUNT(*) FROM posts WHERE userId = users.id) as postsCount,
+       (SELECT COUNT(*) FROM comments WHERE userId = users.id) as commentsCount
+       FROM users 
        ORDER BY createdAt DESC`,
       {
         type: sequelize.QueryTypes.SELECT,
@@ -33,9 +33,9 @@ exports.getAllPosts = async (req, res) => {
   try {
     const posts = await sequelize.query(
       `SELECT p.*, u.username, u.email,
-       (SELECT COUNT(*) FROM Comments c WHERE c.postId = p.id) as commentCount
-       FROM Posts p
-       JOIN Users u ON p.userId = u.id
+       (SELECT COUNT(*) FROM comments c WHERE c.postId = p.id) as commentCount
+       FROM posts p
+       JOIN users u ON p.userId = u.id
        ORDER BY p.createdAt DESC`,
       {
         type: sequelize.QueryTypes.SELECT,
@@ -61,9 +61,9 @@ exports.getAllComments = async (req, res) => {
   try {
     const comments = await sequelize.query(
       `SELECT c.*, u.username, u.email, p.content as postContent
-       FROM Comments c
-       JOIN Users u ON c.userId = u.id
-       JOIN Posts p ON c.postId = p.id
+       FROM comments c
+       JOIN users u ON c.userId = u.id
+       JOIN posts p ON c.postId = p.id
        ORDER BY c.createdAt DESC`,
       {
         type: sequelize.QueryTypes.SELECT,
@@ -98,7 +98,7 @@ exports.updateUserRole = async (req, res) => {
     }
 
     // Vérifier si l'utilisateur existe
-    const [user] = await sequelize.query("SELECT * FROM Users WHERE id = :id", {
+    const [user] = await sequelize.query("SELECT * FROM users WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -120,7 +120,7 @@ exports.updateUserRole = async (req, res) => {
     }
 
     await sequelize.query(
-      "UPDATE Users SET role = :role, updatedAt = NOW() WHERE id = :id",
+      "UPDATE users SET role = :role, updatedAt = NOW() WHERE id = :id",
       {
         replacements: { role, id },
         type: sequelize.QueryTypes.UPDATE,
@@ -147,7 +147,7 @@ exports.deletePost = async (req, res) => {
     const { id } = req.params;
 
     // Vérifier si le post existe
-    const [post] = await sequelize.query("SELECT * FROM Posts WHERE id = :id", {
+    const [post] = await sequelize.query("SELECT * FROM posts WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -160,13 +160,13 @@ exports.deletePost = async (req, res) => {
     }
 
     // Supprimer les commentaires associés
-    await sequelize.query("DELETE FROM Comments WHERE postId = :postId", {
+    await sequelize.query("DELETE FROM comments WHERE postId = :postId", {
       replacements: { postId: id },
       type: sequelize.QueryTypes.DELETE,
     });
 
     // Supprimer le post
-    await sequelize.query("DELETE FROM Posts WHERE id = :id", {
+    await sequelize.query("DELETE FROM posts WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.DELETE,
     });
@@ -192,7 +192,7 @@ exports.deleteComment = async (req, res) => {
 
     // Vérifier si le commentaire existe
     const [comment] = await sequelize.query(
-      "SELECT * FROM Comments WHERE id = :id",
+      "SELECT * FROM comments WHERE id = :id",
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -207,7 +207,7 @@ exports.deleteComment = async (req, res) => {
     }
 
     // Supprimer le commentaire
-    await sequelize.query("DELETE FROM Comments WHERE id = :id", {
+    await sequelize.query("DELETE FROM comments WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.DELETE,
     });
@@ -232,7 +232,7 @@ exports.deleteUser = async (req, res) => {
     const { id } = req.params;
 
     // Vérifier si l'utilisateur existe
-    const [user] = await sequelize.query("SELECT * FROM Users WHERE id = :id", {
+    const [user] = await sequelize.query("SELECT * FROM users WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -253,7 +253,7 @@ exports.deleteUser = async (req, res) => {
     }
 
     // Supprimer l'utilisateur (les posts et commentaires seront supprimés en cascade)
-    await sequelize.query("DELETE FROM Users WHERE id = :id", {
+    await sequelize.query("DELETE FROM users WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.DELETE,
     });
@@ -276,21 +276,21 @@ exports.deleteUser = async (req, res) => {
 exports.getStats = async (req, res) => {
   try {
     const [[userCount]] = await sequelize.query(
-      "SELECT COUNT(*) as count FROM Users",
+      "SELECT COUNT(*) as count FROM users",
       {
         type: sequelize.QueryTypes.SELECT,
       }
     );
 
     const [[postCount]] = await sequelize.query(
-      "SELECT COUNT(*) as count FROM Posts",
+      "SELECT COUNT(*) as count FROM posts",
       {
         type: sequelize.QueryTypes.SELECT,
       }
     );
 
     const [[commentCount]] = await sequelize.query(
-      "SELECT COUNT(*) as count FROM Comments",
+      "SELECT COUNT(*) as count FROM comments",
       {
         type: sequelize.QueryTypes.SELECT,
       }
@@ -298,9 +298,9 @@ exports.getStats = async (req, res) => {
 
     const [topPosts] = await sequelize.query(
       `SELECT p.*, u.username, 
-       (SELECT COUNT(*) FROM Comments c WHERE c.postId = p.id) as commentCount
-       FROM Posts p
-       JOIN Users u ON p.userId = u.id
+       (SELECT COUNT(*) FROM comments c WHERE c.postId = p.id) as commentCount
+       FROM posts p
+       JOIN users u ON p.userId = u.id
        ORDER BY commentCount DESC
        LIMIT 5`,
       {
@@ -312,9 +312,9 @@ exports.getStats = async (req, res) => {
       `SELECT u.id, u.username, u.email,
        COUNT(DISTINCT p.id) as postsCount,
        COUNT(DISTINCT c.id) as commentsCount
-       FROM Users u
-       LEFT JOIN Posts p ON u.id = p.userId
-       LEFT JOIN Comments c ON u.id = c.userId
+       FROM users u
+       LEFT JOIN posts p ON u.id = p.userId
+       LEFT JOIN comments c ON u.id = c.userId
        GROUP BY u.id
        ORDER BY (COUNT(DISTINCT p.id) + COUNT(DISTINCT c.id)) DESC
        LIMIT 5`,

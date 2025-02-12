@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
 
     // Vérifier si l'utilisateur existe déjà
     const [existingUser] = await sequelize.query(
-      "SELECT * FROM Users WHERE email = :email OR username = :username",
+      "SELECT * FROM users WHERE email = :email OR username = :username",
       {
         replacements: { email, username },
         type: sequelize.QueryTypes.SELECT,
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
 
     // Créer l'utilisateur
     const [result] = await sequelize.query(
-      "INSERT INTO Users (username, email, password, role, createdAt, updatedAt) VALUES (:username, :email, :password, :role, NOW(), NOW())",
+      "INSERT INTO users (username, email, password, role, createdAt, updatedAt) VALUES (:username, :email, :password, :role, NOW(), NOW())",
       {
         replacements: {
           username,
@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
 
     // Récupérer l'utilisateur créé
     const [user] = await sequelize.query(
-      "SELECT id, username, email, role FROM Users WHERE id = :id",
+      "SELECT id, username, email, role FROM users WHERE id = :id",
       {
         replacements: { id: result },
         type: sequelize.QueryTypes.SELECT,
@@ -81,7 +81,7 @@ exports.login = async (req, res) => {
 
     // Récupérer l'utilisateur
     const [user] = await sequelize.query(
-      "SELECT * FROM Users WHERE email = :email",
+      "SELECT * FROM users WHERE email = :email",
       {
         replacements: { email },
         type: sequelize.QueryTypes.SELECT,
@@ -134,7 +134,7 @@ exports.login = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const [user] = await sequelize.query(
-      "SELECT id, username, email, role FROM Users WHERE id = :id",
+      "SELECT id, username, email, role FROM users WHERE id = :id",
       {
         replacements: { id: req.user.id },
         type: sequelize.QueryTypes.SELECT,

@@ -8,7 +8,7 @@ exports.createPost = async (req, res) => {
 
     // Créer le post
     const [result] = await sequelize.query(
-      "INSERT INTO Posts (content, userId, createdAt, updatedAt) VALUES (:content, :userId, NOW(), NOW())",
+      "INSERT INTO posts (content, userId, createdAt, updatedAt) VALUES (:content, :userId, NOW(), NOW())",
       {
         replacements: {
           content: content,
@@ -21,9 +21,9 @@ exports.createPost = async (req, res) => {
     // Récupérer le post créé avec les infos de l'utilisateur
     const [post] = await sequelize.query(
       `SELECT p.*, u.username 
-             FROM Posts p 
-             JOIN Users u ON p.userId = u.id 
-             WHERE p.id = :postId`,
+       FROM posts p 
+       JOIN users u ON p.userId = u.id 
+       WHERE p.id = :postId`,
       {
         replacements: {
           postId: result,
@@ -52,10 +52,10 @@ exports.getAllPosts = async (req, res) => {
   try {
     const posts = await sequelize.query(
       `SELECT p.*, u.username,
-             (SELECT COUNT(*) FROM Comments c WHERE c.postId = p.id) as commentCount
-             FROM Posts p 
-             JOIN Users u ON p.userId = u.id 
-             ORDER BY p.createdAt DESC`,
+       (SELECT COUNT(*) FROM comments c WHERE c.postId = p.id) as commentCount
+       FROM posts p 
+       JOIN users u ON p.userId = u.id 
+       ORDER BY p.createdAt DESC`,
       {
         type: sequelize.QueryTypes.SELECT,
       }
@@ -82,10 +82,10 @@ exports.getPost = async (req, res) => {
 
     const [post] = await sequelize.query(
       `SELECT p.*, u.username,
-             (SELECT COUNT(*) FROM Comments c WHERE c.postId = p.id) as commentCount
-             FROM Posts p 
-             JOIN Users u ON p.userId = u.id 
-             WHERE p.id = :id`,
+       (SELECT COUNT(*) FROM comments c WHERE c.postId = p.id) as commentCount
+       FROM posts p 
+       JOIN users u ON p.userId = u.id 
+       WHERE p.id = :id`,
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -102,10 +102,10 @@ exports.getPost = async (req, res) => {
     // Récupérer les commentaires du post
     const comments = await sequelize.query(
       `SELECT c.*, u.username 
-             FROM Comments c 
-             JOIN Users u ON c.userId = u.id 
-             WHERE c.postId = :postId 
-             ORDER BY c.likesCount DESC, c.createdAt DESC`,
+       FROM comments c 
+       JOIN users u ON c.userId = u.id 
+       WHERE c.postId = :postId 
+       ORDER BY c.likesCount DESC, c.createdAt DESC`,
       {
         replacements: { postId: id },
         type: sequelize.QueryTypes.SELECT,
@@ -136,7 +136,7 @@ exports.updatePost = async (req, res) => {
     const userId = req.user.id;
 
     // Vérifier si le post existe et appartient à l'utilisateur
-    const [post] = await sequelize.query("SELECT * FROM Posts WHERE id = :id", {
+    const [post] = await sequelize.query("SELECT * FROM posts WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -156,7 +156,7 @@ exports.updatePost = async (req, res) => {
     }
 
     await sequelize.query(
-      "UPDATE Posts SET content = :content, updatedAt = NOW() WHERE id = :id",
+      "UPDATE posts SET content = :content, updatedAt = NOW() WHERE id = :id",
       {
         replacements: { content, id },
         type: sequelize.QueryTypes.UPDATE,
@@ -165,9 +165,9 @@ exports.updatePost = async (req, res) => {
 
     const [updatedPost] = await sequelize.query(
       `SELECT p.*, u.username 
-             FROM Posts p 
-             JOIN Users u ON p.userId = u.id 
-             WHERE p.id = :id`,
+       FROM posts p 
+       JOIN users u ON p.userId = u.id 
+       WHERE p.id = :id`,
       {
         replacements: { id },
         type: sequelize.QueryTypes.SELECT,
@@ -196,7 +196,7 @@ exports.deletePost = async (req, res) => {
     const userId = req.user.id;
 
     // Vérifier si le post existe
-    const [post] = await sequelize.query("SELECT * FROM Posts WHERE id = :id", {
+    const [post] = await sequelize.query("SELECT * FROM posts WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -216,13 +216,13 @@ exports.deletePost = async (req, res) => {
     }
 
     // Supprimer d'abord les commentaires liés au post
-    await sequelize.query("DELETE FROM Comments WHERE postId = :postId", {
+    await sequelize.query("DELETE FROM comments WHERE postId = :postId", {
       replacements: { postId: id },
       type: sequelize.QueryTypes.DELETE,
     });
 
     // Puis supprimer le post
-    await sequelize.query("DELETE FROM Posts WHERE id = :id", {
+    await sequelize.query("DELETE FROM posts WHERE id = :id", {
       replacements: { id },
       type: sequelize.QueryTypes.DELETE,
     });
