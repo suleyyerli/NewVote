@@ -50,6 +50,8 @@ const User = sequelize.define(
         }
       },
     },
+    tableName: "users",
+    freezeTableName: true,
   }
 );
 
