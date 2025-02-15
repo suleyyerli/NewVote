@@ -1,20 +1,7 @@
 import axios from "axios";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig() || {};
-const API_URL =
-  publicRuntimeConfig?.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL;
-
-console.log("API URL from config:", API_URL);
-
-if (!API_URL) {
-  console.error("NEXT_PUBLIC_API_URL n'est pas définie !");
-  console.log("Utilisation de l'URL de fallback");
-}
 
 const api = axios.create({
-  baseURL:
-    API_URL || "http://jkc88wogss8kg0ccsgwkgk08.147.93.94.82.sslip.io/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
