@@ -16,6 +16,10 @@ const nextConfig = {
   images: {
     domains: ["*"],
   },
+  // Ajout de la configuration du serveur
+  experimental: {
+    serverActions: true,
+  },
 };
 
 module.exports = nextConfig;
