@@ -19,18 +19,22 @@ export default function Auth() {
     setError("");
 
     try {
-      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
       const data = isLogin
         ? { email: formData.email, password: formData.password }
         : formData;
 
+      console.log("Sending request to:", endpoint, "with data:", data);
+
       const response = await api.post(endpoint, data);
+      console.log("Response:", response.data);
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         router.push("/feed");
       }
     } catch (err) {
+      console.error("Error during auth:", err);
       setError(
         (err as any).response?.data?.message || "Une erreur est survenue"
       );
