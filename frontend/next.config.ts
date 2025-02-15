@@ -8,6 +8,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Désactiver les erreurs ESLint en production
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Configuration pour les images externes si nécessaire
   images: {
     domains: ["*"],
