@@ -12,12 +12,19 @@ COPY . .
 # Build de l'application
 RUN npm run build
 
-# Copie des fichiers nécessaires pour le standalone
-RUN cp -r public .next/standalone/ && \
-    cp -r .next/static .next/standalone/.next/
+# Configuration pour le standalone
+RUN cp -r .next/static .next/standalone/.next/ && \
+    cp -r public .next/standalone/ && \
+    cp -r .next/static .next/standalone/.next/static
+
+# Définir le répertoire de travail pour le runtime
+WORKDIR /app/.next/standalone
 
 # Exposition du port
 EXPOSE 3000
 
+# Variable d'environnement pour le chemin des assets
+ENV NODE_ENV=production
+
 # Commande de démarrage pour standalone
-CMD ["node", ".next/standalone/server.js"] 
+CMD ["node", "server.js"] 

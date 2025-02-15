@@ -19,6 +19,8 @@ const nextConfig = {
   images: {
     domains: ["*"],
   },
+  // Configuration des assets statiques
+  assetPrefix: process.env.NODE_ENV === "production" ? "." : "",
   // Ajout de la configuration du serveur
   experimental: {
     serverActions: {
