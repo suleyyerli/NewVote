@@ -18,7 +18,9 @@ const nextConfig = {
   },
   // Ajout de la configuration du serveur
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ["*"],
+    },
   },
 };
 
