@@ -161,3 +161,77 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+
+// Création d'un administrateur
+exports.createAdmin = async (req, res) => {
+  try {
+    const { username, email, password, adminSecret } = req.body;
+
+    // Vérifier le secret administrateur
+    if (adminSecret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({
+        success: false,
+        message: "Code secret administrateur invalide",
+      });
+    }
+
+    // Vérifier si l'utilisateur existe déjà
+    const [existingUser] = await sequelize.query(
+      "SELECT * FROM users WHERE email = :email OR username = :username",
+      {
+        replacements: { email, username },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Un utilisateur avec cet email ou ce nom d'utilisateur existe déjà",
+      });
+    }
+
+    // Hasher le mot de passe
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Créer l'administrateur
+    const [result] = await sequelize.query(
+      "INSERT INTO users (username, email, password, role, createdAt, updatedAt) VALUES (:username, :email, :password, :role, NOW(), NOW())",
+      {
+        replacements: {
+          username,
+          email,
+          password: hashedPassword,
+          role: "admin",
+        },
+        type: sequelize.QueryTypes.INSERT,
+      }
+    );
+
+    // Récupérer l'administrateur créé
+    const [user] = await sequelize.query(
+      "SELECT id, username, email, role FROM users WHERE id = :id",
+      {
+        replacements: { id: result },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Administrateur créé avec succès",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la création de l'administrateur:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la création de l'administrateur",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
+    });
+  }
+};
+
+module.exports = exports;

@@ -10,4 +10,7 @@ router.post("/login", authController.login);
 // Routes protégées
 router.get("/me", protect, authController.getMe);
 
+// Route pour créer un administrateur
+router.post("/create-admin", authController.createAdmin);
+
 module.exports = router;
