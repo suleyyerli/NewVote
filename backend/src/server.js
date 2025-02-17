@@ -15,7 +15,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuration CORS
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://app.suleydev.online", process.env.FRONTEND_URL].filter(
+      Boolean
+    ),
+    credentials: true,
+  })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
