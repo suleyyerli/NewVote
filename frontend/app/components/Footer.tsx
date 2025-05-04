@@ -21,6 +21,20 @@ export default function Footer() {
         </p>
         <p>Copyright © 2024 - Tous droits réservés</p>
       </div>
+      <div className="grid grid-flow-col gap-4">
+        <a href="/mentions-legales" className="link link-hover">
+          Mentions légales
+        </a>
+        <a href="/politique-confidentialite" className="link link-hover">
+          Politique de confidentialité
+        </a>
+        <a href="/cookies" className="link link-hover">
+          Gestion des cookies
+        </a>
+        <a href="/conditions-utilisation" className="link link-hover">
+          Conditions d&apos;utilisation
+        </a>
+      </div>
     </footer>
   );
 }
